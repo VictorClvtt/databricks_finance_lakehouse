@@ -3,9 +3,9 @@ import os
 base_path = "/Volumes/main/financial/lakehouse"
 
 folders = {
-    "bronze": ["csv", "parquet"],
+    "bronze": ["csv", "json"],
     "silver": [],
-    "gold": []
+    "gold": ["normalized_data", "reports"]
 }
 
 for layer, subdirs in folders.items():
