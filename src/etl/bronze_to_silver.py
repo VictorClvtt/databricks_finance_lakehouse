@@ -65,7 +65,7 @@ df_sales.select("Country").distinct().show()
 
 # COMMAND ----------
 
-df_sales = df_sales.where(F.col('Country').isNotNull() & F.col('Product').isNotNull())
+df_sales = df_sales.na.drop(subset=["Country", "Product"])
 
 print(f'Country: {df_sales.where(F.col("Country").isNull()).count()} Null Values')
 print(f'Product: {df_sales.where(F.col("Product").isNull()).count()} Null Values')
