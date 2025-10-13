@@ -1,4 +1,9 @@
 # Databricks notebook source
+# MAGIC %md
+# MAGIC #Importing Libraries and Datasets
+
+# COMMAND ----------
+
 from pyspark.sql import functions as F
 from datetime import datetime
 import os
@@ -31,6 +36,8 @@ else:
     print(f"⚠️  Arquivo de hoje não encontrado, usando o mais recente: {latest_file}")
 
 df_countries = spark.read.csv(csv_path, header=True, inferSchema=True)
+
+# COMMAND ----------
 
 # MAGIC %md
 # MAGIC #Fixing Sales Data
