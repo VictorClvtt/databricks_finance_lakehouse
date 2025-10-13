@@ -1,12 +1,36 @@
 # Databricks notebook source
 from pyspark.sql import functions as F
 from datetime import datetime
+import os
 
 today_str = datetime.now().strftime('%Y-%m-%d')
+base_path = '/Volumes/main/financial/lakehouse/bronze/csv/countries'
 
 df_sales = spark.read.csv(f'/Volumes/main/financial/lakehouse/bronze/csv/sales/sales-data-{today_str}.csv', header=True, inferSchema=True)
-df_countries = spark.read.csv(f'/Volumes/main/financial/lakehouse/bronze/csv/countries/countries-data-{today_str}.csv', header=True, inferSchema=True)
 
+# Nome esperado
+expected_file = f'countries-data-{today_str}.csv'
+expected_path = os.path.join(base_path, expected_file)
+
+if os.path.exists(expected_path):
+    csv_path = expected_path
+else:
+    # Pega todos os arquivos que seguem o padrão
+    all_files = [f for f in os.listdir(base_path) if f.startswith('countries-data-') and f.endswith('.csv')]
+    
+    if not all_files:
+        raise FileNotFoundError(f"Nenhum arquivo encontrado em {base_path}")
+
+    # Extrai a data de cada arquivo e ordena
+    def extract_date(filename):
+        date_str = filename.replace('countries-data-', '').replace('.csv', '')
+        return datetime.strptime(date_str, '%Y-%m-%d')
+
+    latest_file = max(all_files, key=extract_date)
+    csv_path = os.path.join(base_path, latest_file)
+    print(f"⚠️  Arquivo de hoje não encontrado, usando o mais recente: {latest_file}")
+
+df_countries = spark.read.csv(csv_path, header=True, inferSchema=True)
 
 # MAGIC %md
 # MAGIC #Fixing Sales Data
@@ -114,7 +138,7 @@ df_sales.printSchema()
 df_sales = (
     df_sales
     # Data de processamento (timestamp atual)
-    .withColumn("_ingestion_timestamp", F.lit(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    .withColumn("_ingestion_date", F.lit(datetime.now().strftime("%Y-%m-%d")))
     
     # Fonte dos dados (ex: ERP, API, CSV etc.)
     .withColumn("_data_source", F.lit("ERP Global - Sales System"))
@@ -151,7 +175,7 @@ df_countries.printSchema()
 df_countries = (
     df_countries
     # Data de processamento (timestamp atual)
-    .withColumn("_ingestion_timestamp", F.lit(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    .withColumn("_ingestion_date", F.lit(datetime.now().strftime("%Y-%m-%d")))
     
     # Fonte dos dados (ex: ERP, API, CSV etc.)
     .withColumn("_data_source", F.lit("ERP Global - Sales System"))
@@ -168,6 +192,14 @@ df_countries = (
 sales_path = '/Volumes/main/financial/lakehouse/silver/sales/'
 countries_path = '/Volumes/main/financial/lakehouse/silver/countries/'
 
-# Salva Delta direto no volume e registra no UC
-df_sales.write.format("delta").mode("overwrite").save(sales_path)
-df_countries.write.format("delta").mode("overwrite").save(countries_path)
+df_sales.write \
+    .format("delta") \
+    .mode("overwrite") \
+    .partitionBy("_ingestion_date") \
+    .save(sales_path)
+
+df_countries.write \
+    .format("delta") \
+    .mode("overwrite") \
+    .partitionBy("_ingestion_date") \
+    .save(countries_path)
