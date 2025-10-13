@@ -18,22 +18,37 @@ def generate_fake_sales(n: int, inject_defects: bool = True) -> pd.DataFrame:
     segments = ['Government', 'Midmarket', 'Channel Partners', 'Enterprise', 'Small Business']
     countries = ['USA', 'Canada', 'Germany', 'France', 'Brazil', 'Australia',
                  'Spain', 'Italy', 'United Kingdom', 'Mexico', 'Japan', 'India', 'South Africa']
-    products = ['Carretera', 'VTT', 'Amarilla', 'Montana', 'Paseo', 'Rosa', 'Negra',
-                'Ciudad', 'Elite', 'Rapida', 'Velocidad', 'Turbo', 'Aventura']
     discount_bands = ['None', 'Low', 'Medium', 'High']
 
-    today = datetime.today()
+    # 🏷️ Define preços coerentes por produto
+    product_info = {
+        'Carretera': (5, 25),
+        'VTT': (6, 28),
+        'Amarilla': (4, 20),
+        'Montana': (7, 30),
+        'Paseo': (3, 15),
+        'Rosa': (3, 18),
+        'Negra': (6, 35),
+        'Ciudad': (5, 25),
+        'Elite': (10, 55),
+        'Rapida': (12, 75),
+        'Velocidad': (15, 100),
+        'Turbo': (20, 125),
+        'Aventura': (8, 45)
+    }
 
+    today = datetime.today()
     data = []
+
     for _ in range(n):
         segment = random.choice(segments)
         country = random.choice(countries)
-        product = random.choice(products)
+        product = random.choice(list(product_info.keys()))
         discount_band = random.choice(discount_bands)
 
+        manufacturing_price, sale_price = product_info[product]
         units_sold = random.randint(500, 3000)
-        manufacturing_price = random.choice([3, 5, 7])
-        sale_price = random.choice([10, 12, 15, 18, 20, 22, 25, 28, 30, 35, 55, 75, 100, 125])
+
         gross_sales = units_sold * sale_price
         discount = 0 if discount_band == 'None' else gross_sales * random.uniform(0.05, 0.20)
         sales = gross_sales - discount
@@ -66,12 +81,13 @@ def generate_fake_sales(n: int, inject_defects: bool = True) -> pd.DataFrame:
 
     df = pd.DataFrame(data)
 
+    # 🧪 Injetar defeitos (opcional)
     if inject_defects:
-        # 1️⃣ Valores ausentes aleatórios
+        # 1️⃣ Valores ausentes
         for col in ['Country', 'Product', 'Units Sold']:
             df.loc[df.sample(frac=0.05).index, col] = np.nan
 
-        # 2️⃣ Pequenos typos em Country
+        # 2️⃣ Typos em Country
         country_typos = {
             'Brazil': ['Brasil', 'BRAZIL'],
             'USA': ['U.S.A', 'United States'],
