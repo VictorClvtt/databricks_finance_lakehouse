@@ -78,6 +78,7 @@ df_sales = df_sales.withColumn(
     .when(F.col("Country") == "U.S.A", "United States")
     .when(F.col("Country") == "UK", "United Kingdom")
     .when(F.col("Country") == "BRAZIL", "Brazil")
+    .when(F.col("Country") == "Brasil", "Brazil")
     .when(F.col("Country") == "Deutschland", "Germany")
     .otherwise(F.col("Country"))
 )
@@ -155,6 +156,26 @@ df_sales = (
 
 # MAGIC %md
 # MAGIC #Fixing Country Data
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ##Fixing Country Name Typos
+
+# COMMAND ----------
+
+df_sales = df_sales.withColumn(
+    "Country",
+    F.when(F.col("Country") == "USA", "United States")
+    .when(F.col("Country") == "U.S.A", "United States")
+    .when(F.col("Country") == "UK", "United Kingdom")
+    .when(F.col("Country") == "BRAZIL", "Brazil")
+    .when(F.col("Country") == "Brasil", "Brazil")
+    .when(F.col("Country") == "Deutschland", "Germany")
+    .otherwise(F.col("Country"))
+)
+
+df_countries.select("country").distinct().show()
 
 # COMMAND ----------
 
