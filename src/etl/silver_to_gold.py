@@ -78,7 +78,6 @@ fact_sales = (
     .withColumn("date_key", F.date_format("date", "yyyyMMdd").cast("int"))
     # Seleciona as métricas e chaves
     .select(
-        "country",
         "date_key",
         "country_key",
         "product_key",
@@ -97,10 +96,10 @@ display(fact_sales)
 
 # COMMAND ----------
 
-dim_date.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/dim_date")
-dim_country.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/dim_country")
-dim_product.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/dim_product")
-dim_segment.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/dim_segment")
-dim_discount_band.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/dim_discount_band")
+dim_date.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/normalized_data/dim_date")
+dim_country.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/normalized_data/dim_country")
+dim_product.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/normalized_data/dim_product")
+dim_segment.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/normalized_data/dim_segment")
+dim_discount_band.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/normalized_data/dim_discount_band")
 
-fact_sales.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/fact_sales")
+fact_sales.write.format("delta").mode("append").save("/Volumes/main/financial/lakehouse/gold/normalized_data/fact_sales")
