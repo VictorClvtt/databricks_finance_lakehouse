@@ -6,6 +6,7 @@ today_str = datetime.now().strftime("%Y-%m-%d")
 
 # Diretório de saída
 output_dir = f"/Volumes/main/financial/lakehouse/gold/reports/{today_str}"
+dbutils.fs.mkdirs(output_dir)
 
 dim_date = spark.read.format("delta").load("/Volumes/main/financial/lakehouse/gold/normalized_data/dim_date")
 dim_country = spark.read.format("delta").load("/Volumes/main/financial/lakehouse/gold/normalized_data/dim_country")
